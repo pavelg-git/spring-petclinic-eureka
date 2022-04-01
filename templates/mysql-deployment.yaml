@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "spring-petclinic.fullname" . }}
+  labels:
+    {{- include "spring-petclinic.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "spring-petclinic.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "spring-petclinic.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ "mysql" }}
+        image: "{{ .Values.mysql.image.name }}:{{ .Values.mysql.image.tag }}"
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: {{ .Values.mysql.mysqlRootPassword }}
+        - name: MYSQL_ALLOW_EMPTY_PASSWORD
+          value: {{ .Values.mysql.mysqlAllowEmptyPassword }}
+        - name: MYSQL_USER
+          value: {{ .Values.mysql.mysqlUser }}
+        - name: MYSQL_PASSWORD
+          value: {{ .Values.mysql.mysqlPassword }}
+        - name: MYSQL_DATABASE
+          value: {{ .Values.mysql.mysqlDatabase }}
+        ports:
+        - name: mysql
+          containerPort: 3306
+          protocol: TCP    
